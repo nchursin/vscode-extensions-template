@@ -1,65 +1,52 @@
-# templaet README
+# VSCode Extensions template
 
-This is the README for your extension "templaet". After writing up a brief description, we recommend including the following sections.
+This is my custom VSCode extension template. Mainly used to illustrate my blog post about aliases actually.
 
-## Features
+## How to use it
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+1. Clone the repo
+2. Do `git remote remove origin`
+3. Find all occurenses of `templaet` in the project and replace them with your extension name
 
-For example if there is an image subfolder under your extension project workspace:
+You're good to go!
 
-\!\[feature X\]\(images/feature-x.png\)
+## Configuring aliases
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Aliases are configure in `tsconfig.json`. There are 2 sample aliases.
 
-## Requirements
+### Move aliasing to another extension
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+To use aliasing in another extension you need to do the following:
 
-## Extension Settings
+1. Migrate the following code from webpack config:
+```javascript
+const tsconfigContent = require('./tsconfig.json');
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+const alias = {}
+Object.entries(tsconfigContent.compilerOptions.paths).forEach(([aliasName, [ aliasContent ]]) => {
+  const name = aliasName.replace('/*', '');
+  const aliasPath = path.resolve(root, 'out', aliasContent.replace('/*', ''));
+  alias[name] = aliasPath;
+})
+```
+2. Move `alias.ts` to your test folder
+3. Migrate the following code from `runTest.ts`
+```typescript
+import './alias';
+import 'module-alias/register';
+```
+4. Install `module-alias` package
 
-For example:
+## Version under test
 
-This extension contributes the following settings:
+I have a restriction on the VSCode version I can use at work, so I create my extensions with respect to that. For this template it means I have a code that makes sure I run test against a speciic version instead of the latest stable.
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+The version under test is specified in `package.json` in `engines.vscode`.
 
-## Known Issues
+To remove this functionality simply change thfollowing line in `runTest.ts`:
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+`await runTests({ extensionDevelopmentPath, extensionTestsPath, version });`
 
-## Release Notes
+to
 
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+`await runTests({ extensionDevelopmentPath, extensionTestsPath });`
